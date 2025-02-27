@@ -8,7 +8,7 @@ const pieces = [
   { type: 'bishop', color: 'black', position: { row: 0, col: 2 } },
   { type: 'queen', color: 'black', position: { row: 0, col: 3 } },
   { type: 'king', color: 'black', position: { row: 0, col: 4 } },
-  { type: 'bishop', color: 'black', position: { row: 0, col: 5 } },
+  { type: 'bishop', color: 'black', position: { row: 8, col: 3 } },
   { type: 'knight', color: 'black', position: { row: 0, col: 6 } },
   { type: 'rook', color: 'black', position: { row: 0, col: 7 } },
   ...Array(8).fill(null).map((_, i) => ({ type: 'pawn', color: 'black', position: { row: 1, col: i } })),
@@ -246,7 +246,7 @@ function removeHighlight() {
     square.classList.remove('highlight', 'capture-highlight');
   });
 }
-
+ 
 
 initializeBoard();
 createBoard();
