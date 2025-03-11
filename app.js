@@ -1,4 +1,3 @@
-
 const board = Array(8).fill(null).map(() => Array(8).fill(null));
 
 
@@ -8,7 +7,7 @@ const pieces = [
   { type: 'bishop', color: 'black', position: { row: 0, col: 2 } },
   { type: 'queen', color: 'black', position: { row: 0, col: 3 } },
   { type: 'king', color: 'black', position: { row: 0, col: 4 } },
-  { type: 'bishop', color: 'black', position: { row: 8, col: 3 } },
+  { type: 'bishop', color: 'black', position: { row: 0, col: 5 } },
   { type: 'knight', color: 'black', position: { row: 0, col: 6 } },
   { type: 'rook', color: 'black', position: { row: 0, col: 7 } },
   ...Array(8).fill(null).map((_, i) => ({ type: 'pawn', color: 'black', position: { row: 1, col: i } })),
@@ -81,33 +80,55 @@ function toggleTurn() {
 
 function handleSquareClick(row, col) {
   const piece = board[row][col];
-
   if (selectedPiece) {
+    
     if (movePiece(selectedPiece, selectedPosition, row, col)) {
       toggleTurn();
       selectedPiece = null;
       selectedPosition = null;
-      if (isKingInCheck(currentTurn)) {
-        if (isCheckmate(currentTurn)) {
-          alert(`Xeque-mate! O jogador ${currentTurn === 'white' ? 'preto' : 'branco'} venceu!`);
-        } else {
-          alert(`O rei ${currentTurn === 'white' ? 'branco' : 'preto'} está em xeque!`);
+      
+      // Verifica o status de ambos os reis
+      ['white', 'black'].forEach(color => {
+        if (isKingInCheck(color)) {
+          if (isCheckmate(color)) {
+            alert(`Xeque-mate! O jogador ${color === 'white' ? 'preto' : 'branco'} venceu!`);
+          } else {
+            alert(`O rei ${color === 'white' ? 'branco' : 'preto'} está em xeque!`);
+          }
         }
-      }
+      });
       
     } else {
       document.getElementById('move-info').textContent = 'Movimento inválido. Tente novamente.';
+      bgPieceColoring(false)
       selectedPiece = null;
       selectedPosition = null;
+      removeHighlight();
+      
     }
   } else if (piece && piece.color === currentTurn) {
+    
     selectedPiece = piece;
     selectedPosition = { row, col };
     document.getElementById('move-info').textContent = `Peça selecionada: ${pieceToSymbol(piece)} em ${positionToString(row, col)}`;
     showPossibleMoves(piece, row, col);
+    bgPieceColoring(true)
   }
 }
 
+function bgPieceColoring(mov) {
+  const pecaSelecionada = document.getElementById(`${selectedPiece.position.row}-${selectedPiece.position.col}`);
+  if (selectedPiece && mov) {
+    pecaSelecionada.style.backgroundColor = "lightyellow";
+    return;
+  }
+    if(pecaSelecionada.className == 'white-square'){
+      pecaSelecionada.style.backgroundColor = "#f0d9b5";
+    }
+    else{
+      pecaSelecionada.style.backgroundColor = "#b58863";
+    } 
+}
 
 function movePiece(piece, from, toRow, toCol) {
   if (isValidMove(piece, from, toRow, toCol)) {
@@ -173,7 +194,14 @@ function isValidPawnMove(piece, from, toRow, toCol) {
     
     if (toRow === from.row + direction) return true;
     
-    if (from.row === startRow && toRow === from.row + 2 * direction) return true;
+    if (
+      from.row === startRow &&
+      toRow === from.row + 2 * direction &&
+      board[from.row + direction][toCol] === null && // Verifica se a casa à frente está vazia
+      board[toRow][toCol] === null // Verifica se a casa duas à frente também está vazia
+    ) {
+      return true;
+    }
   }
 
   
@@ -263,9 +291,6 @@ function removeHighlight() {
     square.classList.remove('highlight', 'capture-highlight');
   });
 }
-<<<<<<< HEAD
- 
-=======
 
 function isKingInCheck(color) {
   const king = pieces.find(p => p.type === 'king' && p.color === color);
@@ -280,30 +305,29 @@ function isCheckmate(color) {
   }
 
   // Para cada peça do jogador em xeque, verifica se há algum movimento válido
-  for (const piece of pieces) {
-    if (piece.color === color) {
-      const { row, col } = piece.position;
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          if (isValidMove(piece, { row, col }, r, c)) {
-            const originalPiece = board[r][c]; 
-            const originalPosition = { ...piece.position }; 
-              console.log('xaque-maeqwe')
-            // Simula o movimento
-            board[row][col] = null;
-            board[r][c] = piece;
-            piece.position = { row: r, col: c };
+  for (const piece of pieces.filter(p => p.color === color)) {
+    const { row, col } = piece.position;
 
-            const stillInCheck = isKingInCheck(color);
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (isValidMove(piece, { row, col }, r, c)) {
+          const originalPiece = board[r][c]; 
+          const originalPosition = { ...piece.position };
 
-            // Reverte a jogada simulada
-            board[row][col] = piece;
-            board[r][c] = originalPiece;
-            piece.position = originalPosition;
+          // Simula o movimento
+          board[row][col] = null;
+          board[r][c] = piece;
+          piece.position = { row: r, col: c };
 
-            if (!stillInCheck) {
-              return false; // Existe pelo menos um movimento que tira o rei do xeque
-            }
+          const stillInCheck = isKingInCheck(color);
+
+          // Reverte a jogada simulada
+          board[row][col] = piece;
+          board[r][c] = originalPiece;
+          piece.position = originalPosition;
+
+          if (!stillInCheck) {
+            return false; // Existe pelo menos um movimento que tira o rei do xeque
           }
         }
       }
@@ -314,7 +338,7 @@ function isCheckmate(color) {
 }
 
 
->>>>>>> db793fd4ebc23958bffc20d3a62c84f00018e2cf
+
 
 initializeBoard();
 createBoard();
